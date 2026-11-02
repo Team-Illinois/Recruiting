@@ -186,13 +186,12 @@
     mode = mode || 'signin';
     var app = $('#app'); app.innerHTML = ''; app.hidden = false; $('#boot').hidden = true;
     var err = h('div', { class: 'err', role: 'alert', text: msg || '' });
-    var wrap = h('div', { class: 'login' }, h('div', { class: 'login-in' },
-      h('img', { src: 'logo.png', alt: 'Team Illinois Lacrosse' }), h('h1', { text: 'Recruiting' }),
+    var wrap = h('div', { class: 'login' }, h('div', { class: 'login-in' }, loginBrand(), h('div', { class: 'login-side' }, h('div', { class: 'login-card' },
       h('div', { class: 'authtabs', role: 'tablist' },
         h('button', { type: 'button', 'aria-pressed': String(mode === 'signin'), onclick: function () { showAuth('signin'); }, text: 'Sign in' }),
         h('button', { type: 'button', 'aria-pressed': String(mode === 'create'), onclick: function () { showAuth('create'); }, text: 'First time here' })),
       form(), err,
-      h('p', { class: 'fine', text: 'Accounts are set up by your Team Illinois recruiting directors. Each player and parent gets their own sign-in, and you only ever see your own player.' })));
+      h('p', { class: 'fine', text: 'Accounts are set up by your Team Illinois recruiting directors. Each player and parent gets their own sign-in, and you only ever see your own player.' })))));
     app.appendChild(wrap);
 
     function form() {
@@ -239,6 +238,11 @@
         h('button', { class: 'btn', type: 'submit', text: 'Create my account' }));
     }
   }
+  function loginBrand() {
+    return h('div', { class: 'login-brand' }, h('img', { src: 'crest.png', alt: 'Team Illinois Lacrosse' }), h('h1', { text: 'Recruiting' }),
+      h('p', { text: 'Your path to college lacrosse, organized in one place.' }));
+  }
+  function loginPanel(kids) { return h('div', { class: 'login' }, h('div', { class: 'login-in' }, loginBrand(), h('div', { class: 'login-side' }, h('div', { class: 'login-card' }, kids)))); }
   function busy(form, on) { var b = form && form.querySelector('button[type=submit]'); if (b) { b.disabled = on; b.dataset.t = b.dataset.t || b.textContent; b.textContent = on ? 'One moment…' : b.dataset.t; } }
   function showForgot(prefill) {
     sheet(function (box, close) {
@@ -261,8 +265,7 @@
     var p1 = h('input', { type: 'password', autocomplete: 'new-password', placeholder: 'At least 10 characters' });
     var p2 = h('input', { type: 'password', autocomplete: 'new-password', placeholder: 'Type it again' });
     var err = h('div', { class: 'err', role: 'alert' });
-    app.appendChild(h('div', { class: 'login' }, h('div', { class: 'login-in' },
-      h('img', { src: 'logo.png', alt: 'Team Illinois Lacrosse' }), h('h1', { text: 'New password' }),
+    app.appendChild(loginPanel([h('h2', { class: 'card-h', text: 'Set a new password' }),
       h('form', { novalidate: true, onsubmit: function (e) {
         e.preventDefault();
         if (p1.value.length < 10) { err.textContent = 'Use at least 10 characters.'; return; }
@@ -273,7 +276,7 @@
           if (r.error) { err.textContent = r.error.message; return; }
           history.replaceState(null, '', location.pathname); toast('Password updated'); start();
         });
-      } }, field('New password', p1), field('Confirm password', p2), err, h('button', { class: 'btn', type: 'submit', text: 'Save password' })))));
+      } }, field('New password', p1), field('Confirm password', p2), err, h('button', { class: 'btn', type: 'submit', text: 'Save password' }))]));
   }
   function signOut() { sb.auth.signOut().then(function () { S = { user: null, member: null, players: [], pid: null, tab: 'home', schools: null, filters: null, dir: {} }; showAuth('signin'); }); }
   function changePassword() {
@@ -314,10 +317,9 @@
   }
   function renderUnlinked() {
     var app = $('#app'); app.innerHTML = ''; app.hidden = false; $('#boot').hidden = true;
-    app.appendChild(h('div', { class: 'login' }, h('div', { class: 'login-in' }, h('img', { src: 'logo.png', alt: 'Team Illinois Lacrosse' }),
-      h('h1', { text: 'Almost there' }),
-      h('p', { class: 'fine', text: 'Your account isn’t linked to a player yet. Ask a Team Illinois recruiting director to link it, then sign in again.' }),
-      h('button', { class: 'btn', onclick: signOut, text: 'Sign out' }))));
+    app.appendChild(loginPanel([h('h2', { class: 'card-h', text: 'Almost there' }),
+      h('p', { class: 'fine', style: 'text-align:left;margin:8px 0 16px', text: 'Your account isn\u2019t linked to a player yet. Ask a Team Illinois recruiting director to link it, then sign in again.' }),
+      h('button', { class: 'btn', style: 'width:100%', onclick: signOut, text: 'Sign out' })]));
   }
 
   // ================================================================ FAMILY APP
@@ -334,7 +336,8 @@
       b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>';
       b.appendChild(document.createTextNode(t[1])); nav.appendChild(b);
     });
-    return h('div', { class: 'tabs' }, nav);
+    return h('div', { class: 'tabs' }, h('div', { class: 'side-brand' }, h('img', { src: 'crest.png', alt: 'Team Illinois Lacrosse' }), h('b', { text: 'Recruiting' })), nav,
+      h('div', { class: 'side-foot', text: (S.member && S.member.role === 'director' ? 'Director view \u00b7 ' : '') + 'Team Illinois Lacrosse' }));
   }
   function shell(content, tabs, current, go) {
     var app = $('#app'); app.innerHTML = ''; app.hidden = false; $('#boot').hidden = true;
@@ -343,7 +346,7 @@
     window.scrollTo(0, 0);
   }
   function topbar(title, sub) {
-    return h('header', { class: 'mini pad' }, h('img', { src: 'logo.png', alt: 'Team Illinois Lacrosse', class: 'mini-logo' }),
+    return h('header', { class: 'mini pad' }, h('img', { src: 'crest-sm.png', alt: 'Team Illinois Lacrosse', class: 'mini-logo' }),
       h('div', { class: 'mini-t' }, h('h1', { text: title }), sub ? h('span', { text: sub }) : null));
   }
   function goFam(t) { S.tab = t; renderFamily(); }
@@ -368,13 +371,14 @@
   function famHome(main, p) {
     var hr = new Date().getHours();
     var hero = h('header', { class: 'hero pad' },
-      h('div', { class: 'topbar' }, h('div', { class: 'brand' }, h('img', { class: 'logo', src: 'logo.png', alt: 'Team Illinois Lacrosse' }), h('span', { text: 'Recruiting' })),
+      h('div', { class: 'topbar' }, h('div', { class: 'brand' }, h('img', { class: 'logo', src: 'crest-sm.png', alt: 'Team Illinois Lacrosse' }), h('span', { text: 'Recruiting' })),
         h('button', { class: 'signout', 'aria-label': 'Account', onclick: function () { goFam('more'); } }, h('span', { class: 'avatar', text: initials(p.first_name, p.last_name) }))),
-      h('div', { class: 'greet', text: hr < 12 ? 'Good morning,' : hr < 17 ? 'Good afternoon,' : 'Good evening,' }),
-      h('h1', { class: 'name', text: p.first_name + ' ' + p.last_name }),
-      h('div', { class: 'chips', id: 'chips' }, h('span', { class: 'chip', text: 'Class of ' + p.grad_year }), h('span', { class: 'chip', text: gradeLabel(p.grad_year) }), h('span', { class: 'chip', text: 'Men’s lacrosse' })),
-      h('div', { class: 'private', html: null }, lockIcon(), 'Private to you, your parents and your recruiting directors'),
-      contactCard(p));
+      h('div', { class: 'hero-grid' }, h('div', {},
+        h('div', { class: 'greet', text: hr < 12 ? 'Good morning,' : hr < 17 ? 'Good afternoon,' : 'Good evening,' }),
+        h('h1', { class: 'name', text: p.first_name + ' ' + p.last_name }),
+        h('div', { class: 'chips', id: 'chips' }, h('span', { class: 'chip', text: 'Class of ' + p.grad_year }), h('span', { class: 'chip', text: gradeLabel(p.grad_year) }), h('span', { class: 'chip', text: 'Men\u2019s lacrosse' })),
+        h('div', { class: 'private' }, lockIcon(), 'Private to you, your parents and your recruiting directors')),
+      contactCard(p)));
     main.appendChild(hero);
     var body = h('div', { class: 'pad' }); main.appendChild(body);
     body.appendChild(saveBar());
@@ -390,7 +394,7 @@
     var ev = h('section', {}, h('div', { class: 'sh' }, h('h2', { text: 'Next event' })), h('div', { id: 'nextEvent' }, loading()));
     var act = h('section', {}, h('div', { class: 'sh' }, h('h2', { text: 'Coach activity' }), h('button', { class: 'link', onclick: function () { goFam('coaches'); }, text: 'See all' })), h('div', { class: 'list', id: 'activity' }, loading()));
     var my = h('section', {}, h('div', { class: 'sh' }, h('h2', { text: 'My schools' }), h('button', { class: 'link', onclick: function () { goFam('schools'); }, text: 'Search' })), h('div', { class: 'list', id: 'mySchools' }, loading()));
-    body.append(todo, ev, act, my, resources());
+    body.appendChild(h('div', { class: 'cols' }, h('div', {}, todo, resources()), h('div', {}, ev, act, my)));
 
     var pid = p.id, ph = phaseFor(p.grad_year);
     Promise.all([
@@ -533,7 +537,7 @@
     main.appendChild(topbar('Coaches', 'Your coach log'));
     var body = h('div', { class: 'pad' }); main.appendChild(body);
     body.appendChild(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: function () { logContactSheet(p.id, function () { renderFamily(); }); }, text: '+ Log a coach contact' })));
-    var views = h('div', { id: 'viewsBox' }), sent = h('div', { class: 'list', id: 'sentList' }, loading()), log = h('div', { id: 'logList' }, loading());
+    var views = h('div', { id: 'viewsBox' }), sent = h('div', { class: 'list', id: 'sentList' }, loading()), log = h('div', { id: 'logList', class: 'grid2' }, loading());
     body.append(h('section', {}, views), h('section', {}, h('div', { class: 'sh' }, h('h2', { text: 'Sent by your directors' })), sent),
       h('section', {}, h('div', { class: 'sh' }, h('h2', { text: 'Your log' })), log));
     contactLog(p.id, log, true);
@@ -600,6 +604,7 @@
       var meter = h('div', { class: 'meter' }), bar = h('i', {});
       function paintMeter() { var c = completeness(pr); meter.innerHTML = ''; meter.append('Profile ', h('b', { text: c + '%' }), ' complete · Last updated ' + stamp(pr.updated_at), h('div', { class: 'bar' }, bar)); bar.style.width = c + '%'; }
       paintMeter(); holder.appendChild(meter);
+      var secs = h('div', { class: 'psecs' }); holder.appendChild(secs);
       var timers = {};
       SECTIONS.forEach(function (sec) {
         var stampEl = h('time', {});
@@ -629,7 +634,7 @@
           });
           grid.appendChild(h('div', { class: 'pf' + (f[4] ? ' full' : '') }, h('label', { for: el.id, text: f[1] }), el, hint));
         });
-        holder.appendChild(h('section', { class: 'psec' }, h('div', { class: 'psec-h' }, h('h3', { text: sec.title }), stampEl), grid));
+        secs.appendChild(h('section', { class: 'psec' }, h('div', { class: 'psec-h' }, h('h3', { text: sec.title }), stampEl), grid));
       });
       // testing
       var tgrid = h('div', { class: 'pgrid' }), tStamp = h('time', { text: te && te.updated_at ? 'Updated ' + short(te.updated_at) : '' });
@@ -648,7 +653,7 @@
         });
         tgrid.appendChild(h('div', { class: 'pf' }, h('label', { for: el.id, text: f[1] }), el));
       });
-      holder.appendChild(h('section', { class: 'psec' }, h('div', { class: 'psec-h' }, h('h3', { text: 'Athletic testing' }), tStamp),
+      secs.appendChild(h('section', { class: 'psec' }, h('div', { class: 'psec-h' }, h('h3', { text: 'Athletic testing' }), tStamp),
         isDirector ? h('span', { class: 'lock', text: 'Families can see these but can’t edit them' }) : h('span', { class: 'lock', text: '🔒 Entered by your director after testing' }), tgrid));
     });
   }
@@ -668,7 +673,7 @@
     var q = h('input', { type: 'search', placeholder: 'Search school, city, state or field', 'aria-label': 'Search schools', value: F.q });
     var fCount = h('b', { hidden: true }), mineBtn = h('button', { class: 'fbtn', 'aria-pressed': String(F.mine), text: '★ My list' });
     var sort = select([['name', 'Sort: Name'], ['acc', 'Sort: Hardest to get in'], ['net', 'Sort: Lowest net price']], F.sort, { 'aria-label': 'Sort by' });
-    var divRow = h('div', { class: 'divrow' }), count = h('span', {}), clear = h('button', { hidden: true, text: 'Clear filters' }), list = h('div', {}, loading());
+    var divRow = h('div', { class: 'divrow' }), count = h('span', {}), clear = h('button', { hidden: true, text: 'Clear filters' }), list = h('div', { class: 'grid2 g3' }, loading());
     body.append(h('div', { class: 'search' }, q), h('div', { class: 'toolrow' }, h('button', { class: 'fbtn', onclick: openFilters }, 'Filters ', fCount), p ? mineBtn : null, sort), divRow,
       h('div', { class: 'count' }, count, clear), list,
       h('div', { class: 'legend' }, 'Ranges come from public federal data. Schools marked “Sample” are still being verified by your directors.'));
@@ -823,7 +828,7 @@
     var body = h('div', { class: 'pad' }); main.appendChild(body);
     var f = S.dir.rf = S.dir.rf || { year: '', need: false, q: '' };
     var q = h('input', { type: 'search', placeholder: 'Search name, position, high school', 'aria-label': 'Search roster', value: f.q });
-    var chips = h('div', { class: 'divrow' }), count = h('div', { class: 'count' }), list = h('div', {}, loading());
+    var chips = h('div', { class: 'divrow' }), count = h('div', { class: 'count' }), list = h('div', { class: 'grid2 g3' }, loading());
     body.append(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: addPlayerSheet, text: '+ Add player' })), h('div', { class: 'search' }, q), chips, count, list);
     q.addEventListener('input', function () { f.q = q.value; paint(); });
     function paint() {
@@ -883,13 +888,13 @@
       var t = S.dir.ptab || 'profile';
       if (t === 'profile') { holder.appendChild(h('div', { class: 'toolrow' }, h('a', { class: 'btn ghost', href: coachUrl(p.share_token), target: '_blank', rel: 'noopener', text: 'Coach view ↗' }))); var ph = h('div', {}, loading()); holder.appendChild(ph); profileEditor(ph, p, true); }
       if (t === 'notes') dirNotes(holder, p);
-      if (t === 'log') { holder.appendChild(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: function () { logContactSheet(p.id, function () { renderDirector(); }); }, text: '+ Log contact' }))); var lg = h('div', {}, loading()); holder.appendChild(lg); contactLog(p.id, lg, true); }
+      if (t === 'log') { holder.appendChild(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: function () { logContactSheet(p.id, function () { renderDirector(); }); }, text: '+ Log contact' }))); var lg = h('div', { class: 'grid2' }, loading()); holder.appendChild(lg); contactLog(p.id, lg, true); }
       if (t === 'access') dirAccess(holder, p);
       if (t === 'basics') dirBasics(holder, p);
     });
   }
   function dirNotes(holder, p) {
-    var ta = h('textarea', { rows: '3', placeholder: 'Private note. Families never see these.' }), list = h('div', {}, loading());
+    var ta = h('textarea', { rows: '3', placeholder: 'Private note. Families never see these.' }), list = h('div', { class: 'grid2', style: 'margin-top:14px' }, loading());
     holder.append(h('section', { class: 'psec' }, h('div', { class: 'psec-h' }, h('h3', { text: 'Director notes' })), field('New note', ta, 1),
       h('div', { class: 'btns' }, h('button', { class: 'btn', onclick: function () {
         if (!ta.value.trim()) return;
@@ -909,7 +914,7 @@
     load();
   }
   function dirAccess(holder, p) {
-    var linked = h('div', { class: 'list' }, loading()), invites = h('div', {}, loading());
+    var linked = h('div', { class: 'list' }, loading()), invites = h('div', { class: 'grid2' }, loading());
     var email = h('input', { type: 'email', placeholder: 'family@email.com' }), rel = select([['parent', 'Parent'], ['player', 'Player']], 'parent');
     var linkEmail = h('input', { type: 'email', placeholder: 'Email of an existing account' });
     var shareToggle = h('input', { type: 'checkbox', checked: p.share_enabled, id: 'shareT' });
@@ -992,7 +997,7 @@
   function dirRequests(main) {
     main.appendChild(topbar('Coach requests', 'Send players to a college coach'));
     var body = h('div', { class: 'pad' }); main.appendChild(body);
-    var list = h('div', {}, loading());
+    var list = h('div', { class: 'grid2' }, loading());
     body.append(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: function () { newRequest(main); }, text: '+ New coach request' })), list);
     sb.from('coach_requests').select('*, coach_request_players(sent_at, players(first_name,last_name,grad_year,share_token))').order('created_at', { ascending: false }).then(function (r) {
       list.innerHTML = '';
@@ -1063,7 +1068,7 @@
   function dirEvents(main) {
     main.appendChild(topbar('Events', 'Tournaments and showcases'));
     var body = h('div', { class: 'pad' }); main.appendChild(body);
-    var list = h('div', {}, loading());
+    var list = h('div', { class: 'grid2' }, loading());
     body.append(h('div', { class: 'toolrow' }, h('button', { class: 'btn', onclick: function () { eventSheet(null); }, text: '+ Add event' })), list);
     sb.from('events').select('*, event_rosters(player_id)').order('starts_on', { ascending: false }).then(function (r) {
       list.innerHTML = '';
@@ -1123,7 +1128,7 @@
   function dirMeetings(main) {
     main.appendChild(topbar('Meetings', 'Requests from families'));
     var body = h('div', { class: 'pad' }); main.appendChild(body);
-    var list = h('div', {}, loading()); body.appendChild(list);
+    var list = h('div', { class: 'grid2' }, loading()); body.appendChild(list);
     sb.from('meeting_requests').select('*, players(first_name,last_name,grad_year)').order('created_at', { ascending: false }).limit(100).then(function (r) {
       list.innerHTML = '';
       if (r.error) return fail(r.error);

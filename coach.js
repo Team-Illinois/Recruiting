@@ -20,7 +20,7 @@
   function mail(e) { return e ? '<a href="mailto:' + esc(e) + '">' + esc(e) + '</a>' : ''; }
   function tel(n) { return n ? '<a href="tel:' + esc(n.replace(/[^0-9+]/g, '')) + '">' + esc(n) + '</a>' : ''; }
   function notFound() {
-    root.innerHTML = '<div class="cs"><div class="cs-h"><div><h3>Profile unavailable</h3></div><img alt="Team Illinois Lacrosse" src="logo.png"><p>This link isn’t active. Ask Team Illinois Lacrosse for an updated link.</p></div></div>';
+    root.innerHTML = '<div class="cs"><div class="cs-h"><div><h3>Profile unavailable</h3></div><img alt="Team Illinois Lacrosse" src="crest.png"><p>This link isn’t active. Ask Team Illinois Lacrosse for an updated link.</p></div></div>';
   }
 
   if (!token) { notFound(); return; }
@@ -29,7 +29,7 @@
     var v = r.data, t = v.testing || {};
     document.title = v.name + ' · Class of ' + v.grad_year + ' · Team Illinois Lacrosse';
     var size = [v.height, v.weight_lb ? v.weight_lb + ' lb' : ''].filter(Boolean).join(', ');
-    var head = '<div class="cs-h"><div><h3>' + esc(v.name) + '</h3></div><img alt="Team Illinois Lacrosse" src="logo.png">' +
+    var head = '<div class="cs-h"><div><h3>' + esc(v.name) + '</h3></div><img alt="Team Illinois Lacrosse" src="crest.png">' +
       '<p>' + esc(['Class of ' + v.grad_year, v.position, v.dominant_hand ? v.dominant_hand + '-handed' : '', size].filter(Boolean).join(' · ')) + '</p>' +
       '<p class="upd">Last updated ' + esc(new Date(v.updated_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</p></div>';
     var events = (v.upcoming_events || []).slice(0, 3).map(function (e) {
