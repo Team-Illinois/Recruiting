@@ -5,5 +5,7 @@ window.TIR_CONFIG = {
   supabaseUrl: "https://vnsdytpfnynzlqbjwxla.supabase.co",
   supabaseKey: "sb_publishable_fJIk4KtPdxNBEgf_lgwofQ_PJalYvtT",
   clubName: "Team Illinois Lacrosse",
-  appName: "Team Illinois Recruiting"
+  appName: "Team Illinois Recruiting",
+  // Who gets the "Email the directors" message when a family requests a meeting.
+  directorEmails: ["coachbenages@teamillinoislax.com", "joe@teamillinoislax.com", "coachcooper@teamillinoislax.com"]
 };

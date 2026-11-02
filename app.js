@@ -332,7 +332,7 @@
   function tabBar(tabs, current, go) {
     var nav = h('nav', { 'aria-label': 'Main' });
     tabs.forEach(function (t) {
-      var b = h('button', { 'aria-current': t[0] === current ? 'page' : null, onclick: function () { go(t[0]); } });
+      var b = h('button', { 'data-tab': t[0], 'aria-current': t[0] === current ? 'page' : null, onclick: function () { go(t[0]); } });
       b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg>';
       b.appendChild(document.createTextNode(t[1])); nav.appendChild(b);
     });
@@ -575,14 +575,30 @@
       box.append(h('h2', { text: 'Request a meeting' }), h('p', { text: 'A recruiting director will confirm a time with you and a parent.' }),
         field('Format', fmt), field('Times that work', when), field('What do you want to cover?', topic),
         h('div', { class: 'btns' }, h('button', { class: 'btn', onclick: function () {
-          track(sb.from('meeting_requests').insert({ player_id: p.id, format: fmt.value, requested_for: when.value.trim() || null, topic: topic.value.trim() || null }))
-            .then(function () { close(); toast('Request sent · ' + short(Date.now())); }, function (e) { fail(e, 'Not sent'); });
+          var req = { format: fmt.value, when: when.value.trim(), topic: topic.value.trim() };
+          track(sb.from('meeting_requests').insert({ player_id: p.id, format: req.format, requested_for: req.when || null, topic: req.topic || null }))
+            .then(function () { meetingSent(box, close, p, req); }, function (e) { fail(e, 'Not sent'); });
         }, text: 'Send request' }), h('button', { class: 'btn ghost', onclick: close, text: 'Cancel' })),
         h('h3', { class: 'subh', text: 'Your requests' }), list);
       sb.from('meeting_requests').select('*').eq('player_id', p.id).order('created_at', { ascending: false }).limit(5).then(function (r) {
         rows(list, (r.data || []).map(function (m) { return { s: '◷', n: m.format || 'Meeting', t: m.topic || m.requested_for || '', c: m.status === 'Confirmed' || m.status === 'Done' ? 'g' : m.status === 'Cancelled' ? 'w' : 'i', p: m.status, at: m.created_at }; }), 'Requested', 'No requests yet.');
       });
     });
+  }
+
+  function meetingSent(box, close, p, req) {
+    var to = (C.directorEmails || []).join(',');
+    var subj = 'Meeting request: ' + p.first_name + ' ' + p.last_name + ' (Class of ' + p.grad_year + ')';
+    var body = 'Hi Team Illinois recruiting directors,\n\nI just requested a meeting in the recruiting app.\n\nPlayer: ' + p.first_name + ' ' + p.last_name + ', Class of ' + p.grad_year +
+      '\nFormat: ' + req.format + '\nTimes that work: ' + (req.when || 'Flexible') + '\nWhat we want to cover: ' + (req.topic || 'General check-in') + '\n\nThank you!';
+    box.innerHTML = '';
+    box.append(h('div', { class: 'grab' }), h('h2', { text: 'Request saved' }),
+      h('p', { text: 'Your directors will see it in the app. To make sure they see it today, send them a quick email too.' }),
+      h('div', { class: 'btns' },
+        to ? h('a', { class: 'btn', href: 'mailto:' + to + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body), text: 'Email the directors' }) : null,
+        h('button', { class: 'btn ghost', onclick: function () { copy(body); }, text: 'Copy message' }),
+        h('button', { class: 'btn ghost', onclick: close, text: 'Done' })),
+      to ? h('p', { class: 'note', text: 'Goes to: ' + (C.directorEmails || []).join(', ') }) : null);
   }
 
   // ---------------------------------------------------------------- profile (family + director)
@@ -804,6 +820,7 @@
     if (S.dir.player) return dirPlayer(main, S.dir.player);
     var views = { roster: dirRoster, requests: dirRequests, events: dirEvents, meetings: dirMeetings, dmore: dirMore };
     (views[S.tab] || dirRoster)(main);
+    meetingBadge();
   }
   function loadRoster() {
     return Promise.all([
@@ -868,6 +885,15 @@
             close(); toast('Player added. Now invite the family.'); S.dir.player = r.data.id; S.dir.ptab = 'access'; renderDirector();
           }, function (e) { fail(e, 'Not added'); });
         }, text: 'Add player' }), h('button', { class: 'btn ghost', onclick: close, text: 'Cancel' })));
+    });
+  }
+
+  function meetingBadge() {
+    sb.from('meeting_requests').select('id', { count: 'exact', head: true }).eq('status', 'Requested').then(function (r) {
+      var n = r.count || 0, btn = document.querySelector('.tabs nav button[data-tab="meetings"]'); if (!btn) return;
+      var old = btn.querySelector('.badge'); if (old) old.remove();
+      if (n) btn.appendChild(h('span', { class: 'badge', 'aria-label': n + ' new meeting requests', text: n > 9 ? '9+' : String(n) }));
+      if (n && !S.dir.badgeToasted) { S.dir.badgeToasted = true; toast(n + ' meeting request' + (n === 1 ? '' : 's') + ' waiting'); }
     });
   }
 
@@ -1130,12 +1156,13 @@
     var body = h('div', { class: 'pad' }); main.appendChild(body);
     var list = h('div', { class: 'grid2' }, loading()); body.appendChild(list);
     sb.from('meeting_requests').select('*, players(first_name,last_name,grad_year)').order('created_at', { ascending: false }).limit(100).then(function (r) {
+      if (r.data) r.data.sort(function (a, b) { return (a.status === 'Requested' ? 0 : 1) - (b.status === 'Requested' ? 0 : 1); });
       list.innerHTML = '';
       if (r.error) return fail(r.error);
       if (!r.data.length) { list.appendChild(h('div', { class: 'empty', text: 'No meeting requests yet.' })); return; }
       r.data.forEach(function (m) {
         var p = one(m.players) || {}, st = select(['Requested', 'Confirmed', 'Done', 'Cancelled'], m.status, { 'aria-label': 'Status' });
-        st.addEventListener('change', function () { track(sb.from('meeting_requests').update({ status: st.value }).eq('id', m.id)).catch(fail); });
+        st.addEventListener('change', function () { track(sb.from('meeting_requests').update({ status: st.value }).eq('id', m.id)).then(meetingBadge, fail); });
         list.appendChild(h('article', { class: 'sc' }, h('div', { class: 'sc-top' }, h('div', { class: 'meta' }, h('b', { class: 'sc-name', text: (p.first_name || '') + ' ' + (p.last_name || '') + ' · ' + (p.grad_year || '') }),
           h('div', { class: 'sc-loc', text: [m.format, m.requested_for].filter(Boolean).join(' · ') })), st),
           m.topic ? h('p', { class: 'note', text: m.topic }) : null, h('time', { class: 'stamp', text: 'Requested ' + stamp(m.created_at) })));
