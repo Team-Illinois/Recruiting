@@ -46,7 +46,7 @@
     root.innerHTML = '<article class="cs">' + head + '<div class="cs-b">' +
       sec('Teams', kv([['Club', [v.club_team, v.club_jersey ? '#' + v.club_jersey : ''].filter(Boolean).join(' · '), 1], ['High school', [v.high_school, v.hs_jersey ? '#' + v.hs_jersey : ''].filter(Boolean).join(' · '), 1]])) +
       sec('Upcoming events', kv(events)) +
-      sec('Academics', kv([['GPA (unweighted)', v.gpa_unweighted], ['GPA (weighted)', v.gpa_weighted], ['SAT', v.sat], ['ACT', v.act], ['Intended major', v.intended_major, 1], ['Honors', v.academic_honors, 1], ['NCAA ID', v.ncaa_id, 1]])) +
+      sec('Academics', kv([['GPA', v.gpa ? v.gpa + (v.gpa_scale ? ' (' + v.gpa_scale + ')' : '') : null], ['SAT', v.sat], ['ACT', v.act], ['Intended major', v.intended_major, 1], ['Honors', v.academic_honors, 1], ['NCAA ID', v.ncaa_id, 1]])) +
       sec('Lacrosse', kv([['Stats', v.key_stats, 1], ['Honors', v.lacrosse_honors, 1], ['Highlight film', link(v.film_url, 'Watch film ↗'), 1, 1]])) +
       sec('Athletic testing', testsHtml) + sec('Contact', contact) + sec('References', refs) +
       '</div></article>' +
