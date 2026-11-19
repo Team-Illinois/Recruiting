@@ -1405,7 +1405,9 @@
             status,
             h('div', { class: 'btns' }, h('button', { class: 'btn', onclick: function () {
               var pid = pick.value; if (!pid || pid === 'skip') { status.textContent = 'Choose the player first, or skip.'; return; }
-              this.disabled = true; doImport(pid, ip, existing[pid] || {}, replace.checked, schools).then(function () { status.textContent = 'Imported ✓'; }, function (e) { status.textContent = 'Not imported: ' + e.message; });
+              var btn = this; btn.disabled = true; btn.textContent = 'Importing…';
+              doImport(pid, ip, existing[pid] || {}, replace.checked, schools).then(function () { status.textContent = ''; btn.textContent = 'Imported ✓'; btn.className = 'btn ghost'; card.classList.add('imported'); },
+                function (e) { btn.disabled = false; btn.textContent = 'Try again'; status.textContent = 'Not imported: ' + e.message; });
             }, text: 'Import this player' })));
           out.appendChild(card);
         });

@@ -542,3 +542,4 @@ section{margin-top:26px}
   .qcard:not(.done) .qcard-k,.qcard:not(.done) h3,.qcard:not(.done) p,.qcard:not(.done) .progress{grid-column:1}
   .qcard:not(.done) .btn{grid-column:2;grid-row:1 / span 4;align-self:center}
 }
+.sc.imported{opacity:.7}
